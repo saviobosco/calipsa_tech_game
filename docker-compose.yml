@@ -1,4 +1,4 @@
-version: '1'
+version: '3'
 services: 
 
  #PHP Service
@@ -20,7 +20,8 @@ services:
   networks:
    - app-network
 
- #Nginx Service
+
+#Nginx Service
  webserver:
   image: nginx:alpine
   container_name: webserver
@@ -35,8 +36,9 @@ services:
   networks:
     - app-network
 
+
 #MySQL Service
-db:
+ db:
   image: mysql:5.7.22
   container_name: db
   restart: unless-stopped
@@ -44,7 +46,8 @@ db:
   ports: 
     - "3306:3306"
   environment:
-    MYSQL_DATABASE: calipsa_question_game
+    MYSQL_DATABASE: calipsa_tech_game
+    MYSQL_ROOT_USER: root
     MYSQL_ROOT_PASSWORD: password
     SERVICE_TAGS: dev
     SERVICE_NAME: mysql
@@ -54,13 +57,15 @@ db:
   networks:
     - app-network
 
+
 #Docker Networks
- networks:
-   app-network:
-     driver: bridge
+networks:
+  app-network:
+      driver: bridge
+
 
 #Volumes
- volumes:
+volumes:
    dbdata:
      driver: local
 
