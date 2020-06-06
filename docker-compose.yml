@@ -17,10 +17,13 @@ services:
   volumes:
     - ./:/var/www
     - ./php/local.ini:/usr/local/etc/php/conf.d/local.ini
+  ports:
+    - "9091:8080"
   networks:
    - app-network
 
 
+   
 #Nginx Service
  webserver:
   image: nginx:alpine

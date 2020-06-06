@@ -92,8 +92,8 @@
         <script src="{{ asset('js/ab_websock.js') }}"></script>
 
         <script>
-            var conn = new ab.Session('ws://{{env('PHP_APP_IP')}}:8080',
-                function() {
+            var conn = new ab.Session('ws://' + window.location.hostname +':9091',
+                function() {  
                     conn.subscribe('kittensCategory', function(topic, data) {
                         // This is where you would add the new article to the DOM (beyond the scope of this tutorial)
                         console.log('New article published to category "' + topic + '" : ' + data.title);

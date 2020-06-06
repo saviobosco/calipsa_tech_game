@@ -39,8 +39,8 @@ class TestBlog extends Command
     {
         $entryData = array(
             'category' => 'kittensCategory'
-        , 'title'    => 'Hello World'
-        , 'article'  => 'Hello Johnbosco'
+        , 'title'    => 'Hello World 2'
+        , 'article'  => 'Hello Johnbosco, Call me now please'
         , 'when'     => time()
         );
 
