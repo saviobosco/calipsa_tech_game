@@ -24,7 +24,7 @@ Open your terminal or CMD in windows OS and navigate to root folder of the repos
 Run `docker-compose up -d`
 if this is your first time running this operation, it might take some time to complete.
 
-Run `docker-compose exec app php composer.phar install` to install the laravel php dependencies.
+Run `docker-compose exec app composer install` to install the laravel php dependencies.
 
 Run `docker-compose exec app php artisan migrate` to create the database tables.
 
