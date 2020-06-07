@@ -43,7 +43,11 @@
                         <div>
                             @if($game_session->player_1_username === request()->session()->get('game_session.username'))
                                 <div id="display_player_1_question">
-
+                                    @if (isset($unAnsweredQuestions) && !empty($unAnsweredQuestions))
+                                        @foreach($unAnsweredQuestions as $unAnsweredQuestion)
+                                            @include('game.question.question', ['question' => $unAnsweredQuestion])
+                                        @endforeach
+                                    @endif
                                 </div>
                             @endif
 
@@ -74,7 +78,8 @@
                                         <div id="question-sent-response">
 
                                         </div>
-                                        <form id="ask_question_form" method="POST" action="{{ route('game.ask_question') }}">
+                                        <form style="{{ (isset($unAnsweredQuestions) && !$unAnsweredQuestions->isEmpty()) ? 'display:none;' : 'display:block;' }}"
+                                            id="ask_question_form" method="POST" action="{{ route('game.ask_question') }}">
                                             @csrf
                                             <input type="hidden" name="game_session_code" value="{{ $game_session->code }}">
                                             <div class="form-group">
@@ -85,9 +90,14 @@
                                                 <button class="btn btn-primary">Submit Question</button>
                                             </div>
                                         </form>
+
                                         <hr>
                                         <div id="asked-questions-container">
-
+                                            @if(isset($answeredQuestions) && !$answeredQuestions->isEmpty())
+                                                @foreach($answeredQuestions as $answeredQuestion)
+                                                    @include('game.question.answer', ['question' => $answeredQuestion])
+                                                @endforeach
+                                            @endif
                                         </div>
                                     </div>
                                 </div>
@@ -187,7 +197,7 @@
                             }
 
                             if (data.event_type === 'question_asked') {
-                                $('#display_player_1_question').html(data.question_view);
+                                $('#display_player_1_question').prepend(data.question_view);
                             }
 
                             if (data.event_type === 'question_answered') {
@@ -195,7 +205,10 @@
                                 if (data.total_questions !== undefined) {
                                     $('#total-questions').text(data.total_questions);
                                 }
-                                $('#ask_question_form').show();
+
+                                if ( parseInt(data.un_answered_questions) === 0) {
+                                    $('#ask_question_form').show();
+                                }
                             }
 
                             if (data.event_type === 'game_over') {

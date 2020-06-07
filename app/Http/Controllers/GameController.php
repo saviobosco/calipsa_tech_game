@@ -60,7 +60,7 @@ class GameController extends Controller {
                     \session()->flash('error', 'username already exist!.');
                     return redirect()->route('game.start');
                 }
-                
+
                 $game_session->update([
                     'player_2_username' => $request->input('username')
                 ]);
@@ -113,8 +113,18 @@ class GameController extends Controller {
 
             $totalQuestionsCount = GameQuestion::where('game_session_id', $game_session->id)
                 ->count();
+
+            $unAnsweredQuestions = GameQuestion::where('game_session_id', $game_session->id)
+                ->whereNull('answer')
+                ->get();
+
+            $answeredQuestions = GameQuestion::where('game_session_id', $game_session->id)
+                ->whereNotNull('answer')
+                ->latest()
+                ->get();
+
             return view('game.in_play')
-                ->with(compact('game_session', 'totalQuestionsCount'));
+                ->with(compact('game_session', 'totalQuestionsCount', 'unAnsweredQuestions', 'answeredQuestions'));
 
         } else {
             return redirect()->route('game.start');
@@ -145,7 +155,7 @@ class GameController extends Controller {
                     'event_type' => 'game_over',
                     'message' => 'Player could not guess the correct word after 20 questions.'
                 ];
-                
+
 
                 EventPusher::pushEvent($data);
 
@@ -200,18 +210,26 @@ class GameController extends Controller {
 
     public function answerQuestion(Request $request, GameQuestion $gameQuestion)
     {
-        $gameQuestion->update($request->input());
 
         $game_session = GameSession::where('code', $request->session()->get('game_session.code'))->first();
-        if ($game_session) {
-            $total_questions = GameQuestion::where('game_session_id', $game_session->id)->count();
+
+        if (!$game_session) {
+            $request->session()->flash('error', 'Invalid Session.');
+            return redirect()->route('game.start');
         }
+        $gameQuestion->update($request->input());
+
+        $total_questions = GameQuestion::where('game_session_id', $game_session->id)->count();
+        $unAnsweredQuestions = GameQuestion::where('game_session_id', $game_session->id)
+            ->whereNull('answer')
+            ->count();
 
         $data = [
             'game_code' => $request->session()->get('game_session.code'),
             'event_type' => 'question_answered',
             'username' => $request->session()->get('game_session.username'),
-            'answer_view' => view('game.question.answer')->with(['question' => $gameQuestion])->render()
+            'answer_view' => view('game.question.answer')->with(['question' => $gameQuestion])->render(),
+            'un_answered_questions' => $unAnsweredQuestions
         ];
         if (isset($total_questions)) {
             $data['total_questions'] = $total_questions;
@@ -220,6 +238,7 @@ class GameController extends Controller {
 
         return 'saved';
     }
+
 
 
     public function guessWord(Request $request)
