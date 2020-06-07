@@ -26,6 +26,13 @@
                         <div class="alert alert-info">
                             Game in Session.
                         </div>
+                        @if (!$game_session->player_2_username)
+                            <div id="game-code-share" class="alert alert-info">
+                                Copy game code : <strong>{{ $game_session->code }}</strong> and share with a friend.
+                            </div>
+                        @endif
+
+
                         <div>
                             @if($game_session->player_1_username === request()->session()->get('game_session.username'))
                                 <p> Total Question Asked : <strong id="total-questions"> {{ $totalQuestionsCount }} </strong>  </p>
@@ -193,6 +200,7 @@
                                 if (data.username !== game_data.username) {
                                     alert("Player 2 has join the game");
                                     $('#player-2-username').text(data.username);
+                                    $('#game-code-share').hide();
                                 }
                             }
 
