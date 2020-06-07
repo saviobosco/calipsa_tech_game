@@ -18,22 +18,13 @@ Installation
 clone the githhub repository `git clone https://github.com/saviobosco/calipsa_tech_game.git`.
 
 Ensure Docker and Docker compose are installed in your computer, else 
-checkout this.
+checkout this [docker installation](https://docs.docker.com/get-docker)
 
 Open your terminal or CMD in windows OS and navigate to root folder of the repository. 
 Run `docker-compose up -d`
 if this is your first time running this operation, it might take some time to complete.
 
 Run `docker-compose exec app php composer.phar install` to install the laravel php dependencies.
-
-Open the `.env` file in the repository root and replace the following
-
-`DB_HOST=db 
- DB_PORT=3306
- DB_DATABASE=calipsa_tech_game
- DB_USERNAME=root
- DB_PASSWORD=password
-`
 
 Open a new terminal, navigate the project repository and execute `docker-compose exec app php web_socket_server.php` 
 to start the websocket server. 

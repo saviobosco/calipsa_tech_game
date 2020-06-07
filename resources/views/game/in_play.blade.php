@@ -116,6 +116,7 @@
                 if (data.message) {
                     $('#question').val('');
                     questionSentResponseMessage(data.message);
+                    $('#ask_question_form').hide();
                 } else {
                     questionSentResponseMessage(data.message)
                 }
@@ -154,16 +155,16 @@
             if (event.target.tagName=== "BUTTON") {
                 event.preventDefault();
                 // get the form
-                console.log($(event.target.form).serialize());
-                console.log(event.target.form.action);
                 var form_data = $(event.target.form).serialize();
-
-
-                $.post(event.target.form.action, form_data, function(data) {
-                    if (data) {
-                        $('#display_player_1_question').html('');
-                    }
-                });
+                if (form_data == '') {
+                    alert('Please select an answer.')
+                } else {
+                    $.post(event.target.form.action, form_data, function(data) {
+                        if (data) {
+                            $('#display_player_1_question').html('');
+                        }
+                    });
+                }
             }
         });
 
@@ -194,6 +195,7 @@
                                 if (data.total_questions !== undefined) {
                                     $('#total-questions').text(data.total_questions);
                                 }
+                                $('#ask_question_form').show();
                             }
 
                             if (data.event_type === 'game_over') {
@@ -204,7 +206,6 @@
                         }
                     }
                     // This is where you would add the new article to the DOM (beyond the scope of this tutorial)
-                    console.log(data);
                 });
             },
             function() {
