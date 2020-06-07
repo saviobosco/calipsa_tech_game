@@ -26,6 +26,8 @@ if this is your first time running this operation, it might take some time to co
 
 Run `docker-compose exec app php composer.phar install` to install the laravel php dependencies.
 
+Run `docker-compose exec app php artisan migrate` to create the database tables.
+
 Open a new terminal, navigate the project repository and execute `docker-compose exec app php web_socket_server.php` 
 to start the websocket server. 
 
