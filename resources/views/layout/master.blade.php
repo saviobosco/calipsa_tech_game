@@ -4,8 +4,9 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name') }} </title>
+    <title> Word Guesser - @yield('title') </title>
 
     <link href="https://fonts.googleapis.com/css?family=Nunito:200,600" rel="stylesheet" type="text/css">
     <link href="{{ asset('css/app.css') }}" rel="stylesheet">
@@ -15,23 +16,28 @@
     <nav class="navbar navbar-expand-md navbar-light navbar-laravel">
         <div class="container">
             <a class="navbar-brand" href="{{ url('/') }}">
-                {{ config('app.name', '') }}
+                Word Guesser
             </a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                <!-- Left Side Of Navbar -->
-                <ul class="navbar-nav mr-auto">
-
-                </ul>
 
                 <!-- Right Side Of Navbar -->
                 <ul class="navbar-nav ml-auto">
                     <!-- Authentication Links -->
                     <li>
-                        <a class="nav-link" href="#">{{ __('Help') }}</a>
+                    <a class="nav-link" href="{{ route('front_end.game_rules') }}">Game Rules</a>
+                    </li>
+                    <li>
+                    <a class="nav-link" href="{{ route('front_end.instructions') }}"> Instructions </a>
+                    </li>
+                    <li>
+                    <a class="nav-link" href="{{ route('front_end.about_game') }}"> About Game </a>
+                    </li>
+                    <li>
+                        <a class="nav-link" href="{{ route('front_end.help') }}">{{ __('Help') }}</a>
                     </li>
 
                 </ul>
@@ -94,6 +100,13 @@
 
 <!-- Scripts -->
 <script src="{{ asset('assets/jquery/jquery.js') }}"></script>
+<script>
+    $.ajaxSetup({
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        }
+    });
+</script>
 @yield('footer-script');
 </body>
 </html>

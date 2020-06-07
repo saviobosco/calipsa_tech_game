@@ -1,9 +1,35 @@
 @extends('layout.master')
 
+@section('title')
+    Start Game
+@stop
 
 @section('content')
 
     <div class="container">
+
+        <div class="row">
+            <div class="col-sm-12" style="margin-bottom: 20px;">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="card-title"> Game Rules </h4>
+                    </div>
+                    <div class="card-body">
+                        <p> These are the rules of the game. </p>
+
+                        <ol>
+                            <li> A player can guess the correct word or ask up to 20 questions to guess the correct word. </li>
+                            <li> If a player is unable to gues the correct word after 20 guess. the game ends. </li>
+                            <li> If a player guess the word correctly, the game enter.</li>
+                            <li> One player can start a game and share game code with a friend to join game </li>
+                            <li> A User can enter an active game code to join a game.</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
         <div class="row">
             <div class="col-sm-6">
                 <div class="card">

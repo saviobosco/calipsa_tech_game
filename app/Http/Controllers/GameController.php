@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 
 use App\GameQuestion;
 use App\GameSession;
+use App\WebSocket\EventPusher;
 use Illuminate\Contracts\Session\Session;
 use Illuminate\Http\Request;
 
@@ -51,8 +52,15 @@ class GameController extends Controller {
         ]);
 
         $game_session = GameSession::where('code', $request->input('code'))->first();
+
         if ($game_session) {
             if (empty($game_session->player_2_username)) {
+
+                if ($game_session->player_1_username === $request->input('username')) {
+                    \session()->flash('error', 'username already exist!.');
+                    return redirect()->route('game.start');
+                }
+                
                 $game_session->update([
                     'player_2_username' => $request->input('username')
                 ]);
@@ -61,6 +69,14 @@ class GameController extends Controller {
                     'code' => $game_session->code,
                     'username' => $request->input('username')
                 ]);
+
+                $details = [
+                    'game_code' => $game_session->code,
+                    'event_type' => 'player_joined',
+                    'username' => $request->input('username')
+                ];
+                EventPusher::pushEvent($details);
+
                 return redirect()->route('game.in_play');
             } else {
                 \session()->flash('error', 'Sorry you can\'t join the game session because game participants are complete.');
@@ -75,7 +91,7 @@ class GameController extends Controller {
     public function inPlay()
     {
         // check if the session exists
-        if (\request()->session()->exists('game_session')) {
+        if (\request()->session()->has('game_session')) {
             $game_session_details = \request()->session()
                 ->get('game_session');
 
@@ -95,8 +111,10 @@ class GameController extends Controller {
                 return redirect()->route('game.start');
             }
 
+            $totalQuestionsCount = GameQuestion::where('game_session_id', $game_session->id)
+                ->count();
             return view('game.in_play')
-                ->with(compact('game_session'));
+                ->with(compact('game_session', 'totalQuestionsCount'));
 
         } else {
             return redirect()->route('game.start');
@@ -116,52 +134,137 @@ class GameController extends Controller {
 
         if ($game_session) {
 
-            GameQuestion::create([
+
+            $questionsCount = GameQuestion::where('game_session_id', $game_session->id)
+            ->count();
+
+            if ($questionsCount >= 20) {
+
+                $data = [
+                    'game_code' => $request->session()->get('game_session.code'),
+                    'event_type' => 'game_over',
+                    'message' => 'Player could not guess the correct word after 20 questions.'
+                ];
+                
+
+                EventPusher::pushEvent($data);
+
+                if ($request->ajax()) {
+                    return response()->json([
+                        'message' => '<div class="alert alert-info"> Questions maximum limit reached!. </div>'
+                    ]);
+                }
+            }
+
+
+            $question = GameQuestion::create([
                 'question' => $request->input('question'),
                 'game_session_id' => $game_session->id
             ]);
 
+            if ($question) {
+                $details = [
+                    'game_code' => $game_session->code,
+                    'event_type' => 'question_asked',
+                    'username' => $request->session()->get('game_session.username'),
+                    'question_view' => view('game.question.question')->with(compact('question'))->render()
+                ];
 
-            if ($request->ajax()) {
-                return response()->json([
-                    'message' => 'success'
-                ]);
+                EventPusher::pushEvent($details);
+
+
+                if ($request->ajax()) {
+                    return response()->json([
+                        'message' => '<div class="alert alert-success"> Question was successfully sent!. </div>'
+                    ]);
+                }
+
+                session()->flash('success', 'Question was successfully received.');
+            } else {
+                session()->flash('error', 'Question could not be saved.');
+
+                if ($request->ajax()) {
+                    return response()->json([
+                        'message' => '<div class="alert alert-success"> Question was not sent successfully please try again!. </div>'
+                    ]);
+                }
             }
-            session()->flash('success', 'Question was successfully received.');
         } else {
-            session()->flash('error', 'Question could not be saved.');
-            if ($request->ajax()) {
-                return response()->json([
-                    'message' => 'Could not add the question. Please try again.'
-                ]);
-            }
+            session()->flash('error', 'Invalid session');
+
+            return redirect()->route('game.start');
         }
         return back();
     }
 
 
-    /**
-     * For player One
-     */
-    public function getQuestions()
+    public function answerQuestion(Request $request, GameQuestion $gameQuestion)
     {
-        // get the last unanswered question in the group
-        $questions = GameQuestion::where('game_session_id', \request()->query('game_session_id'))
-            ->get();
+        $gameQuestion->update($request->input());
 
-        return view('game.get_questions')
-            ->with(compact('questions'));
+        $game_session = GameSession::where('code', $request->session()->get('game_session.code'))->first();
+        if ($game_session) {
+            $total_questions = GameQuestion::where('game_session_id', $game_session->id)->count();
+        }
+
+        $data = [
+            'game_code' => $request->session()->get('game_session.code'),
+            'event_type' => 'question_answered',
+            'username' => $request->session()->get('game_session.username'),
+            'answer_view' => view('game.question.answer')->with(['question' => $gameQuestion])->render()
+        ];
+        if (isset($total_questions)) {
+            $data['total_questions'] = $total_questions;
+        }
+        EventPusher::pushEvent($data);
+
+        return 'saved';
     }
 
 
-    public function answerQuestion()
+    public function guessWord(Request $request)
     {
+        $request->validate([
+            'guess_word' => 'required'
+        ]);
 
+        $game_session = GameSession::where('code', $request->session()->get('game_session.code'))->first();
+
+        if ($game_session) {
+            if (strtolower($request->input('guess_word')) === strtolower($game_session->guess_word)) {
+
+                // game over
+                $data = [
+                    'game_code' => $request->session()->get('game_session.code'),
+                    'event_type' => 'game_over',
+                    'message' => 'Player 2 Guessed the word Correctly. Word: '. $game_session->guess_word,
+                ];
+
+                EventPusher::pushEvent($data);
+
+                return response()->json([
+                    'message' => '<div class="alert alert-success"> You guessed the word Correctly. </div>'
+                ]);
+
+            } else {
+                return response()->json([
+                    'message' => '<div class="alert alert-danger"> Incorrect Word. Try Again. </div>'
+                ]);
+            }
+        }
     }
+
 
     public function gameOver()
     {
+        $game_session = GameSession::where('code', \request()->session()->get('game_session.code'))->first();
 
+        if ($game_session) {
+            $game_session->update(['game_over' => 1]);
+            \request()->session()->flush();
+        }
+
+        return view('game.game_over');
     }
 
 }

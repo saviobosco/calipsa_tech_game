@@ -1,13 +1,43 @@
-## About Laravel
+## About Word Guesser (Multiplayer Game)
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel attempts to take the pain out of development by easing common tasks used in the majority of web projects, such as:
+Word Guess is a multiplayer game built with laravel framework for calispa technical assessment.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+Tech Stack
 
-Laravel is accessible, yet powerful, providing tools needed for large, robust applications.
+PHP 7.2 
+Ngninx 
+
+WebServer 
+
+Mysql Database Server
+
+Ratchet PHP Library for web socket connection.
+
+Installation 
+
+clone the githhub repository `git clone https://github.com/saviobosco/calipsa_tech_game.git`.
+
+Ensure Docker and Docker compose are installed in your computer, else 
+checkout this.
+
+Open your terminal or CMD in windows OS and navigate to root folder of the repository. 
+Run `docker-compose up -d`
+if this is your first time running this operation, it might take some time to complete.
+
+Run `docker-compose exec app php composer.phar install` to install the laravel php dependencies.
+
+Open the `.env` file in the repository root and replace the following
+
+`DB_HOST=db 
+ DB_PORT=3306
+ DB_DATABASE=calipsa_tech_game
+ DB_USERNAME=root
+ DB_PASSWORD=password
+`
+
+Open a new terminal, navigate the project repository and execute `docker-compose exec app php web_socket_server.php` 
+to start the websocket server. 
+
+Please Ensure you start the web socket server, else game might not function well.
+
+Navigate the `http://<your-ip>:8080` and enjoy the game.
